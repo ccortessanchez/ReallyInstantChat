@@ -38,6 +38,8 @@ final class ChatViewController: JSQMessagesViewController {
     
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
+    private lazy var messageRef: DatabaseReference = self.channelRef!.child("messages")
+    private var newMessageRefHandle: DatabaseHandle?
   
     // MARK: View Lifecycle
   
@@ -46,10 +48,6 @@ final class ChatViewController: JSQMessagesViewController {
         self.senderId = Auth.auth().currentUser?.uid
         collectionView!.collectionViewLayout.incomingAvatarViewSize = CGSize.zero
         collectionView!.collectionViewLayout.outgoingAvatarViewSize = CGSize.zero
-    }
-  
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
     }
     
     private func addMessage(with id: String, name: String, text: String) {
@@ -79,8 +77,32 @@ final class ChatViewController: JSQMessagesViewController {
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
         return nil
     }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = super.collectionView(collectionView, cellForItemAt: indexPath) as! JSQMessagesCollectionViewCell
+        let message = messages[indexPath.item]
+        
+        if message.senderId == senderId {
+            cell.textView?.textColor = UIColor.white
+        } else {
+            cell.textView?.textColor = UIColor.black
+        }
+        return cell
+    }
   
     // MARK: Firebase related methods
+    override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
+        let itemRef = messageRef.childByAutoId()
+        let messageItem = [
+            "senderId": senderId!,
+            "senderName": senderDisplayName,
+            "text": text
+        ]
+        
+        itemRef.setValue(messageItem)
+        JSQSystemSoundPlayer.jsq_playMessageSentSound()
+        finishSendingMessage()
+    }
   
   
     // MARK: UI and User Interaction
@@ -91,7 +113,7 @@ final class ChatViewController: JSQMessagesViewController {
     
     private func setupIncomingBubble() -> JSQMessagesBubbleImage {
         let bubbleImageFactory = JSQMessagesBubbleImageFactory()
-        return bubbleImageFactory!.incomingMessagesBubbleImage(with: UIColor.jsq_messageBubbleRed())
+        return bubbleImageFactory!.incomingMessagesBubbleImage(with: UIColor.jsq_messageBubbleLightGray())
     }
 
   
