@@ -38,21 +38,51 @@ final class ChatViewController: JSQMessagesViewController {
     
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
+    
     private lazy var messageRef: DatabaseReference = self.channelRef!.child("messages")
     private var newMessageRefHandle: DatabaseHandle?
-  
+    
+    private lazy var userIsTypingRef: DatabaseReference = self.channelRef!.child("typingIndicator").child(self.senderId)
+    private var localTyping = false
+    var isTyping: Bool {
+        get {
+            return localTyping
+        }
+        set {
+            localTyping = newValue
+            userIsTypingRef.setValue(newValue)
+        }
+    }
+    
     // MARK: View Lifecycle
   
     override func viewDidLoad() {
         super.viewDidLoad()
         self.senderId = Auth.auth().currentUser?.uid
+        observeMessages()
+        
         collectionView!.collectionViewLayout.incomingAvatarViewSize = CGSize.zero
         collectionView!.collectionViewLayout.outgoingAvatarViewSize = CGSize.zero
-        observeMessages()
+        
     }
     
-    private func addMessage(with id: String, name: String, text: String) {
-        if let message = JSQMessage(senderId: id, displayName: name, text: text) {
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        /**
+        // messages from someone else
+        addMessage(withId: "foo", name: "Mr.Bolt", text: "I am so fast!")
+        // messages sent from local sender
+        addMessage(withId: senderId, name: "Me", text: "I bet I can run faster than you!")
+        addMessage(withId: senderId, name: "Me", text: "I like to run!")
+        // animates the receiving of a new message on the view
+        finishReceivingMessage()
+         **/
+        observeTyping()
+    }
+    
+    private func addMessage(withId: String, name: String, text: String) {
+        if let message = JSQMessage(senderId: withId, displayName: name, text: text) {
             messages.append(message)
         }
     }
@@ -103,6 +133,7 @@ final class ChatViewController: JSQMessagesViewController {
         itemRef.setValue(messageItem)
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
         finishSendingMessage()
+        isTyping = false
     }
     
     private func observeMessages() {
@@ -111,12 +142,18 @@ final class ChatViewController: JSQMessagesViewController {
         newMessageRefHandle = messageQuery.observe(.childAdded, with: { (snapshot) -> Void in
             let messageData = snapshot.value as! Dictionary<String,String>
             if let id = messageData["senderId"] as String!, let name = messageData["senderName"] as String!, let text = messageData["text"] as String!, text.characters.count > 0 {
-                self.addMessage(with: id, name: name, text: text)
+                self.addMessage(withId: id, name: name, text: text)
                 self.finishReceivingMessage()
             } else {
                 print("Error! Could not decode message data")
             }
         })
+    }
+    
+    private func observeTyping() {
+        let typingIndicatorRef = channelRef!.child("typingIndicator")
+        userIsTypingRef = typingIndicatorRef.child(senderId)
+        userIsTypingRef.onDisconnectRemoveValue()
     }
   
   
@@ -133,5 +170,9 @@ final class ChatViewController: JSQMessagesViewController {
 
   
     // MARK: UITextViewDelegate methods
+    override func  textViewDidChange(_ textView: UITextView) {
+        super.textViewDidChange(textView)
+        isTyping = textView.text != ""
+    }
   
 }
