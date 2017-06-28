@@ -14,7 +14,6 @@
 		45A0D8FE1D49508800F26729 /* CreateChannelCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45A0D8FD1D49508800F26729 /* CreateChannelCell.swift */; };
 		45A0D9011D4BB5E900F26729 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45A0D9001D4BB5E900F26729 /* Channel.swift */; };
 		45B210371D3B740700DB4827 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 45B210361D3B740700DB4827 /* GoogleService-Info.plist */; };
-		59F9A1471F02B79200D1E1D6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 59F9A1461F02B79200D1E1D6 /* GoogleService-Info.plist */; };
 		BB53557A1BEF765800321277 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5355791BEF765800321277 /* AppDelegate.swift */; };
 		BB53557C1BEF765800321277 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB53557B1BEF765800321277 /* LoginViewController.swift */; };
 		BB53557F1BEF765800321277 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB53557D1BEF765800321277 /* Main.storyboard */; };
@@ -182,7 +181,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0700;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Razeware LLC";
 				TargetAttributes = {
 					BB5355751BEF765800321277 = {
@@ -225,7 +224,6 @@
 				BB5355811BEF765800321277 /* Assets.xcassets in Resources */,
 				459E535F1D4BF36A00E675A5 /* License in Resources */,
 				BB53557F1BEF765800321277 /* Main.storyboard in Resources */,
-				59F9A1471F02B79200D1E1D6 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
