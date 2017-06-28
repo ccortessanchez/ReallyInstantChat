@@ -60,6 +60,11 @@ final class ChatViewController: JSQMessagesViewController {
     lazy var storageRef: StorageReference = Storage.storage().reference(forURL: "gs://reallyinstantchat-4ba1f.appspot.com/")
     private let imageURLNotSetKey = "NOTSET"
     
+    private var updateMessageRefHandle: DatabaseHandle?
+    
+    private var photoMessageMap = [String: JSQPhotoMediaItem]()
+    
+    
     // MARK: View Lifecycle
   
     override func viewDidLoad() {
@@ -90,6 +95,27 @@ final class ChatViewController: JSQMessagesViewController {
     private func addMessage(withId: String, name: String, text: String) {
         if let message = JSQMessage(senderId: withId, displayName: name, text: text) {
             messages.append(message)
+        }
+    }
+    
+    private func addPhotoMessage(withId id: String, key: String, mediaItem: JSQPhotoMediaItem) {
+        if let message = JSQMessage(senderId: id, displayName: "", media: mediaItem) {
+            messages.append(message)
+            
+            if (mediaItem.image == nil) {
+                photoMessageMap[key] = mediaItem
+            }
+            collectionView.reloadData()
+        }
+    }
+    
+    deinit {
+        if let refHandle = newMessageRefHandle {
+            messageRef.removeObserver(withHandle: refHandle)
+        }
+        
+        if let refHandle = updateMessageRefHandle {
+            messageRef.removeObserver(withHandle: refHandle)
         }
     }
   
@@ -150,8 +176,24 @@ final class ChatViewController: JSQMessagesViewController {
             if let id = messageData["senderId"] as String!, let name = messageData["senderName"] as String!, let text = messageData["text"] as String!, text.characters.count > 0 {
                 self.addMessage(withId: id, name: name, text: text)
                 self.finishReceivingMessage()
+            } else if let id = messageData["senderId"] as String!, let photoUrl = messageData["photoUrl"] as String! {
+                if let mediaItem = JSQPhotoMediaItem(maskAsOutgoing: id == self.senderId) {
+                    self.addPhotoMessage(withId: id, key: snapshot.key, mediaItem: mediaItem)
+                    if photoUrl.hasPrefix("gs://") {
+                        self.fetchImageDataAtUrl(photoUrl, forMediaItem: mediaItem, clearPhotoMessageMapOnSuccessForKey: nil)
+                    }
+                }
             } else {
                 print("Error! Could not decode message data")
+            }
+        })
+        updateMessageRefHandle = messageRef.observe(.childChanged, with: { (snapshot) in
+            let key = snapshot.key
+            let messageData = snapshot.value as! Dictionary<String,String>
+            if let photoUrl = messageData["photoUrl"] as String! {
+                if let mediaItem = self.photoMessageMap[key] {
+                    self.fetchImageDataAtUrl(photoUrl, forMediaItem: mediaItem, clearPhotoMessageMapOnSuccessForKey: key)
+                }
             }
         })
     }
@@ -209,6 +251,33 @@ final class ChatViewController: JSQMessagesViewController {
             picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         }
         present(picker, animated: true, completion:nil)
+    }
+    
+    private func fetchImageDataAtUrl(_ photoUrl: String, forMediaItem mediaItem: JSQPhotoMediaItem, clearPhotoMessageMapOnSuccessForKey key: String?) {
+        let storageRef = Storage.storage().reference(forURL: photoUrl)
+        storageRef.getData(maxSize: INT64_MAX) { (data, error) in
+            if let error = error {
+                print("Error downloading photo \(error.localizedDescription)")
+                return
+            }
+            storageRef.getMetadata(completion: { (metadata, metadataErr) in
+                if let error = metadataErr {
+                    print("Error downloading metadata: \(error)")
+                    return
+                }
+                if (metadata?.contentType == "image/gif") {
+                    mediaItem.image = UIImage.gifWithData(data!)
+                } else {
+                    mediaItem.image = UIImage.init(data: data!)
+                }
+                self.collectionView.reloadData()
+                
+                guard key != nil else {
+                    return
+                }
+                self.photoMessageMap.removeValue(forKey: key!)
+            })
+        }
     }
   
     // MARK: UITextViewDelegate methods
