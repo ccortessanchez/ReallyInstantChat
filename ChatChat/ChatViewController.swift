@@ -23,6 +23,7 @@
 import UIKit
 import Firebase
 import JSQMessagesViewController
+import Photos
 
 var messages = [JSQMessage]()
 
@@ -53,6 +54,11 @@ final class ChatViewController: JSQMessagesViewController {
             userIsTypingRef.setValue(newValue)
         }
     }
+    
+    private lazy var usersTypingQuery: DatabaseQuery = self.channelRef!.child("typingIndicator").queryOrderedByValue().queryEqual(toValue: true)
+    
+    lazy var storageRef: StorageReference = Storage.storage().reference(forURL: "gs://reallyinstantchat-4ba1f.appspot.com/")
+    private let imageURLNotSetKey = "NOTSET"
     
     // MARK: View Lifecycle
   
@@ -154,6 +160,32 @@ final class ChatViewController: JSQMessagesViewController {
         let typingIndicatorRef = channelRef!.child("typingIndicator")
         userIsTypingRef = typingIndicatorRef.child(senderId)
         userIsTypingRef.onDisconnectRemoveValue()
+        
+        usersTypingQuery.observe(.value, with: { (data: DataSnapshot) in
+            if data.childrenCount == 1 && self.isTyping {
+                return
+            }
+            
+            self.showTypingIndicator = data.childrenCount > 0
+            self.scrollToBottom(animated: true)
+        })
+    }
+    
+    func sendPhotoMessage() -> String? {
+        let itemRef = messageRef.childByAutoId()
+        let messageItem = [
+            "photoUrl": imageURLNotSetKey,
+            "senderId": senderId!
+        ]
+        itemRef.setValue(messageItem)
+        JSQSystemSoundPlayer.jsq_playMessageSentSound()
+        finishSendingMessage()
+        return itemRef.key
+    }
+    
+    func setImageURL(_ url: String, forPhotoMessageWithKey key: String) {
+        let itemRef = messageRef.child(key)
+        itemRef.updateChildValues(["photoUrl": url])
     }
   
   
@@ -168,6 +200,16 @@ final class ChatViewController: JSQMessagesViewController {
         return bubbleImageFactory!.incomingMessagesBubbleImage(with: UIColor.jsq_messageBubbleLightGray())
     }
 
+    override func didPressAccessoryButton(_ sender: UIButton) {
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera)) {
+            picker.sourceType = UIImagePickerControllerSourceType.camera
+        } else {
+            picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        }
+        present(picker, animated: true, completion:nil)
+    }
   
     // MARK: UITextViewDelegate methods
     override func  textViewDidChange(_ textView: UITextView) {
@@ -175,4 +217,49 @@ final class ChatViewController: JSQMessagesViewController {
         isTyping = textView.text != ""
     }
   
+}
+
+extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        if let photoReferenceUrl = info[UIImagePickerControllerReferenceURL] as? URL {
+            let assets = PHAsset.fetchAssets(withALAssetURLs: [photoReferenceUrl], options: nil)
+            let asset = assets.firstObject
+            
+            if let key = sendPhotoMessage() {
+                asset?.requestContentEditingInput(with: nil, completionHandler: { (contentEditingInput, info) in
+                    let imageFileUrl = contentEditingInput?.fullSizeImageURL
+                    let path = "\(Auth.auth().currentUser?.uid)/\(Int(Date.timeIntervalSinceReferenceDate * 1000))/\(photoReferenceUrl.lastPathComponent)"
+                    self.storageRef.child(path).putFile(from: imageFileUrl!, metadata: nil) { (metadata, error) in
+                        if let error = error {
+                            print("Error uploading photo \(error.localizedDescription)")
+                            return
+                        }
+                        self.setImageURL(self.storageRef.child((metadata?.path)!).description, forPhotoMessageWithKey: key)
+                    }
+                })
+            }
+        } else {
+            //Handle picking photo from camera
+            let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+            if let key = sendPhotoMessage() {
+                let imageData = UIImageJPEGRepresentation(image, 1.0)
+                let imagePath = Auth.auth().currentUser!.uid + "/\(Int(Date.timeIntervalSinceReferenceDate * 1000)).jpg"
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpeg"
+                storageRef.child(imagePath).putData(imageData!, metadata: metadata) { (metadata, error) in
+                    if let error = error {
+                        print("Error uploading photo \(error.localizedDescription)")
+                        return
+                    }
+                    self.setImageURL(self.storageRef.child((metadata?.path)!).description, forPhotoMessageWithKey: key)
+                }
+            }
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
 }
