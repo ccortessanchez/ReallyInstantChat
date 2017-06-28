@@ -48,6 +48,7 @@ final class ChatViewController: JSQMessagesViewController {
         self.senderId = Auth.auth().currentUser?.uid
         collectionView!.collectionViewLayout.incomingAvatarViewSize = CGSize.zero
         collectionView!.collectionViewLayout.outgoingAvatarViewSize = CGSize.zero
+        observeMessages()
     }
     
     private func addMessage(with id: String, name: String, text: String) {
@@ -102,6 +103,20 @@ final class ChatViewController: JSQMessagesViewController {
         itemRef.setValue(messageItem)
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
         finishSendingMessage()
+    }
+    
+    private func observeMessages() {
+        messageRef = channelRef!.child("messages")
+        let messageQuery = messageRef.queryLimited(toLast: 25)
+        newMessageRefHandle = messageQuery.observe(.childAdded, with: { (snapshot) -> Void in
+            let messageData = snapshot.value as! Dictionary<String,String>
+            if let id = messageData["senderId"] as String!, let name = messageData["senderName"] as String!, let text = messageData["text"] as String!, text.characters.count > 0 {
+                self.addMessage(with: id, name: name, text: text)
+                self.finishReceivingMessage()
+            } else {
+                print("Error! Could not decode message data")
+            }
+        })
     }
   
   
