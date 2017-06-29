@@ -14,6 +14,7 @@
 		45A0D8FE1D49508800F26729 /* CreateChannelCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45A0D8FD1D49508800F26729 /* CreateChannelCell.swift */; };
 		45A0D9011D4BB5E900F26729 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45A0D9001D4BB5E900F26729 /* Channel.swift */; };
 		45B210371D3B740700DB4827 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 45B210361D3B740700DB4827 /* GoogleService-Info.plist */; };
+		598CBD2A1F04EAC800F80427 /* ClientAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 598CBD291F04EAC800F80427 /* ClientAnalytics.swift */; };
 		BB53557A1BEF765800321277 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5355791BEF765800321277 /* AppDelegate.swift */; };
 		BB53557C1BEF765800321277 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB53557B1BEF765800321277 /* LoginViewController.swift */; };
 		BB53557F1BEF765800321277 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB53557D1BEF765800321277 /* Main.storyboard */; };
@@ -32,6 +33,7 @@
 		45A0D8FD1D49508800F26729 /* CreateChannelCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateChannelCell.swift; sourceTree = "<group>"; };
 		45A0D9001D4BB5E900F26729 /* Channel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		45B210361D3B740700DB4827 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		598CBD291F04EAC800F80427 /* ClientAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientAnalytics.swift; sourceTree = "<group>"; };
 		59F9A1461F02B79200D1E1D6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BB1E97061C147BAA00E34853 /* ChatChat-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ChatChat-Bridging-Header.h"; sourceTree = "<group>"; };
 		BB5355761BEF765800321277 /* ChatChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +67,14 @@
 				45A0D9001D4BB5E900F26729 /* Channel.swift */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		598CBD281F04EA9800F80427 /* Firebase Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				598CBD291F04EAC800F80427 /* ClientAnalytics.swift */,
+			);
+			name = "Firebase Analytics";
 			sourceTree = "<group>";
 		};
 		7D3F1A160C70BC0F3046C759 /* Pods */ = {
@@ -110,6 +120,7 @@
 				4570C5E21D54FD11007946D9 /* ChatChat.entitlements */,
 				45A0D8FF1D4BB5DD00F26729 /* Model */,
 				BB5355901BEF816500321277 /* Controller */,
+				598CBD281F04EA9800F80427 /* Firebase Analytics */,
 				BB5355921BEF818700321277 /* Layout */,
 				BB5355911BEF817A00321277 /* Supporting Files */,
 				BB5355801BEF765800321277 /* Assets.xcassets */,
@@ -289,6 +300,7 @@
 				45A0D8FA1D49419500F26729 /* ChannelListViewController.swift in Sources */,
 				BB53557A1BEF765800321277 /* AppDelegate.swift in Sources */,
 				45A0D8FE1D49508800F26729 /* CreateChannelCell.swift in Sources */,
+				598CBD2A1F04EAC800F80427 /* ClientAnalytics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

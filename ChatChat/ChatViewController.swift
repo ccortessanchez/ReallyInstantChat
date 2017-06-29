@@ -161,11 +161,11 @@ final class ChatViewController: JSQMessagesViewController {
             "senderName": senderDisplayName,
             "text": text,
         ]
-        
         itemRef.setValue(messageItem)
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
         finishSendingMessage()
         isTyping = false
+        ClientAnalytics.sendMessageSendEvent(messageSent: senderDisplayName)
     }
     
     private func observeMessages() {
@@ -228,6 +228,7 @@ final class ChatViewController: JSQMessagesViewController {
     func setImageURL(_ url: String, forPhotoMessageWithKey key: String) {
         let itemRef = messageRef.child(key)
         itemRef.updateChildValues(["photoUrl": url])
+        ClientAnalytics.sendPhotoMessageSentEvent(photoMessageSent: url)
     }
   
   

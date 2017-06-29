@@ -103,6 +103,7 @@ class ChannelListViewController: UITableViewController {
                 "name":name
             ]
             newChannelRef.setValue(channelItem)
+            ClientAnalytics.sendCreateNewChannelEvent(channelAdded: name)
         }
     }
     
@@ -111,6 +112,7 @@ class ChannelListViewController: UITableViewController {
         if indexPath.section == Section.currentChannelsSection.rawValue {
             let channel = channels[(indexPath as NSIndexPath).row]
             self.performSegue(withIdentifier: "ShowChannel", sender: channel)
+            ClientAnalytics.sendOpenChannelChat(channelOpened: channel.name)
         }
     }
     
