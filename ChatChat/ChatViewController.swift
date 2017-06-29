@@ -159,7 +159,7 @@ final class ChatViewController: JSQMessagesViewController {
         let messageItem = [
             "senderId": senderId!,
             "senderName": senderDisplayName,
-            "text": text
+            "text": text,
         ]
         
         itemRef.setValue(messageItem)
@@ -217,7 +217,7 @@ final class ChatViewController: JSQMessagesViewController {
         let itemRef = messageRef.childByAutoId()
         let messageItem = [
             "photoUrl": imageURLNotSetKey,
-            "senderId": senderId!
+            "senderId": senderId!,
         ]
         itemRef.setValue(messageItem)
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
